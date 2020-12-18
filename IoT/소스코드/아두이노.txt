@@ -1,0 +1,119 @@
+#include <ESP8266WiFi.h> //와이파이 라이브러리
+#include <FirebaseArduino.h> //파이어베이스 라이브러리
+#include <DHT.h> //온습도센서 라이브러리
+#include <time.h> //시간출력 라이브러리
+
+//Firebase에 접속하기 위한 호스트 주소와 비밀번호 및 와이파이 탐색
+#define FIREBASE_HOST "ydg-project01.firebaseio.com"
+#define FIREBASE_AUTH "hVUZtqs0mzIelfYHX7P3A9RqeWKpswwAtPlAFrHd"
+#define WIFI_SSID "YDG"
+
+//DHT D2핀에 연결하여 온습도 측정
+#define DHTPIN D2 //연결핀
+#define DHTTYPE DHT11 //온습도센서
+DHT dht(DHTPIN, DHTTYPE); 
+
+// 시간연동
+int timezone = 9; // 9 -> 한국시간
+int dst = 0;
+
+void setup() {
+  Serial.begin(115200); //시리얼통신을 115200에서 하겠다
+  dht.begin(); //온습도 측정을 시작
+
+  WiFi.mode(WIFI_STA);  // Wi-Fi 초기화 
+  // 와이파이 검색
+  WiFi.begin(WIFI_SSID);
+  Serial.print("connecting......"); 
+  
+  while (WiFi.status() != WL_CONNECTED) {
+    // 검색 중일 때 시리얼 모니터에 0.5초 간격으로 나옴
+    Serial.print(".");
+    delay(500);
+  }
+  //와이파이가 잡히면 wifi의 ip주소를 보여줌
+  Serial.println();
+  Serial.print("connected: ");
+  Serial.println(WiFi.localIP());
+
+  // NTP 설정(네트워크 시간 설정)
+  // 시간 값(10자리 UTC 값)은 매 1초마다 자동으로 증가
+  configTime(timezone * 3600, dst, "kr.pool.ntp.org", "ntp2.kornet.net");
+  Serial.println("Waiting for time");
+  while (!time(nullptr)) {
+    Serial.print(".");
+    delay(500);
+  }
+  Serial.println();
+  Serial.println("Now: " + NowString());//시간 결과값을 보여줌
+
+  // Firebase 실시간 데이터베이스에 연결
+  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+}
+
+void loop() {
+  delay(2000); //지연시간 2초 설정
+  // Read temp & Humidity dht에서 읽어온 값 저장
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  float index; //변수 값 초기화
+  String stat = "ON"; //네트워크 상태
+
+  index = 1.8*t-0.55*(1-h/100)*(1.8*t-26)+32; // 불쾌지수 계산식
+
+  if (isnan(h) || isnan(t)) {
+    Serial.println("Failed to read from DHT sensor!");
+    delay(500);
+    return;
+  }
+  //온습도 결과값을 시리얼 모니터에서 확인
+  Serial.print("Humidity: ");
+  Serial.print(h);
+  Serial.print(" %\t");
+  Serial.print("Temperature: ");
+  Serial.print(t);
+  Serial.print(" *C ");
+  Serial.println();
+
+  //json 메시지를 200바이트로 결과 값들을 파싱을 해줌
+  StaticJsonBuffer<200> jsonBuffer;
+  JsonObject& root = jsonBuffer.createObject();
+  root["temperature"] = t;
+  root["humidity"] = h;
+  root["index"] = index;
+  root["time"] = NowString();
+  root["status"] = stat;
+  
+  // append a new value to /logDHT 새로운값을을 넣어줌
+  String name = Firebase.push("logDHT", root);
+  // handle error
+  if (Firebase.failed()) {//에러가났다면 보고
+      Serial.print("pushing /logs failed:");
+      Serial.println(Firebase.error());  
+      return;
+  }//들어갔으면 들어갔다고 보여줌
+  Serial.print("pushed: /logDHT/");
+  Serial.println(name);
+  delay(2000);
+}
+
+
+
+// 현재 시간 받아오는 함수
+String NowString() {
+  time_t now = time(nullptr);
+  struct tm* newtime = localtime(&now);
+  String tmpNow = "";
+  tmpNow += String(newtime->tm_year + 1900);
+  tmpNow += "-";
+  tmpNow += String(newtime->tm_mon + 1);
+  tmpNow += "-";
+  tmpNow += String(newtime->tm_mday );
+  tmpNow += " ";
+  tmpNow += String(newtime->tm_hour );
+  tmpNow += ":";
+  tmpNow += String(newtime->tm_min);
+  tmpNow += ":";
+  tmpNow += String(newtime->tm_sec);
+  return tmpNow;
+}

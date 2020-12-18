@@ -1,0 +1,333 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8"><link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
+<script type="text/JavaScript" src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script type="text/JavaScript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script type="text/javascript">
+
+</script>
+  <!-- 폰트 변경 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style type=text/css>
+  .u.i-progressbar {
+    position: relative;
+  }
+
+  .coco{
+    position: relative; /*coco안의 태그와 관계*/
+    background-color:#1A647D; /* 배경색 지정 */
+    height: 67px;
+    width: 400px;
+    margin-left: 37%;
+    border: 2px solid black;
+    border-radius: 0.9em;
+
+  }
+
+  #st{
+    position: absolute;
+    top: -30%;
+    width: 100%;
+    text-align: center;
+  }
+
+.progressbar1{
+    position: absolute;
+    border: 2px solid #A29BFD;
+    border-radius: 0.9em;
+    height: 90px;
+    width: 380px;
+    margin-top: 25px;
+    margin-left: 5%;
+}
+.progressbar2{
+    position: absolute;
+    border: 2px solid #A29BFD;
+    border-radius: 0.9em;
+    height: 90px;
+    width: 380px;
+    margin-left: 500px;
+    margin-top: 25px;
+    margin-right: 5%;
+}
+  .humi{
+    position: relative;
+    border: 2px solid #A29BFD;
+    border-radius: 0.9em;
+    height: 90px;
+    width: 380px;
+    text-align: center;
+    float: left;
+  }
+
+  .temp{
+    position: relative;
+    border: 2px solid #A29BFD;
+    border-radius: 0.9em;
+    height: 90px;
+    width: 380px;
+    text-align: center;
+    float: right;
+  }
+
+  .cc #t {
+  	position: relative;
+  	padding: 15px;
+  	width: 400px;
+  	text-decoration: none;
+  	font-size: 20px;
+  	color: white;
+  	border-radius: 0 5px 5px 0;
+  	left: -400px; /* 왼쪽에 파묻기*/
+  	transition: 0.8s;
+  }
+
+  .ff{
+    position: relative;
+    width: 100;
+    text-align: center;
+    float: right;
+    margin-right: 3%;
+  }
+
+  .cc #i {
+  	position: relative;
+  	padding: 20px;
+  	width: 30px;
+    float: left;
+  }
+
+  .cc #t:hover {
+  	background-color: #000;
+  	left: 0;
+  }
+
+  #box{
+    margin-top: 10px;
+    height: 150px;
+    margin-left: 13%;
+    margin-right: 13%;
+    /* border: 2px solid #A29BFD; */
+    border-radius: 0 5px 5px 0;
+  }
+</style>
+
+</head>
+<body>
+<div style="background-image: url('back.jpg')">
+  <div>
+    <div class="coco">
+      <h1><p id="st"></p></h1>
+    </div>
+    <div id="box">
+      <div class="progressbar1">
+        <div class="humi">
+          <h1 id="humi"></h1>
+        </div>
+      </div>
+      <div class="progressbar2">
+        <div class="temp">
+          <h1 id="temp"></h1>
+        </div>
+      </div>
+    </div>
+    <div class="ff">
+      <h4><p id="f"> <img id="face" src=""> </p></h4>
+    </div>
+  </div>
+  <div class="cc" style="width: 200px">
+    <img id="i" src="time.png" width="30" height="30">
+    <h4><p id="t">dd</p></h4>
+  </div>
+</div>
+    <hr>
+    <div id="chartContainer" style="height: 500px; width: 100%;"></div>
+    <hr>
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+          <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-app.js"></script>
+         <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-analytics.js"></script>
+         <script src="https://www.gstatic.com/firebasejs/7.15.5/firebase-database.js"></script>
+
+    <!-- canvasjs -->
+    <!-- canvasJS 라이브러리(canavasjs.min.js)가 존재하는 경로 반드시 확인 바람  -->
+    <script src="C:\Users\dbseh\Desktop\canvasjs-2.3.2\canvasjs.min.js"></script>
+
+    <script>
+        // 일단 파이어베이스에서 웹에 연결 할 수 있도록 준 코드를 넣어준다.
+        var firebaseConfig = {
+          apiKey: "AIzaSyBf6P3y54e71WRiVq-lZtfjWR5AHOprFPM",
+          authDomain: "ydg-project01.firebaseapp.com",
+          databaseURL: "https://ydg-project01.firebaseio.com",
+          projectId: "ydg-project01",
+          storageBucket: "ydg-project01.appspot.com",
+          messagingSenderId: "570221143003",
+          appId: "1:570221143003:web:534965641e0af0919afdfe",
+          measurementId: "G-0D7YFR7S6N"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        firebase.analytics();
+
+        // CnavasJS.Chart 객체 생성 및 실행
+        var chart = new CanvasJS.Chart("chartContainer", {
+            animationEnabled: true,
+            title: {
+                text: "윤동근 IoT Weather Monitor",
+                fontFamily: "Helvetica",
+                fontWeight: "bold",
+                fontColor: '#03254E',
+                fontSize: 22,
+            },
+            legend: {
+                fontSize: 15,
+                // verticalAlign: "top",  // legend를 top으로 이동함, 기본은 차트 bottom에 위치함
+            },
+            axisX: { //그래프 x축에는 시간
+                title: "Time",
+                suffix: "s",
+                titleFontSize: 14,
+                titleFontColor: '#03254E',
+                valueFormatString: 'HH:mm:ss',
+                labelFontColor: '#03254E',
+            },
+            axisY: { //그래프 왼쪽 y축에는 온도
+                title: "Temperature",
+                suffix: "°C",
+                valueFormatString: "0.0#",
+                minimum: 0,
+                maximum: 50,
+                titleFontColor: '#03254E',
+                titleFontSize: 14,
+                labelFontColor: '#03254E',
+            },
+            axisY2: { //그래프 오른쪽 y축에는 습도
+                title: "Humidity",
+                suffix: "%",
+                valueFormatString: "0.0#",
+                minimum: 0,
+                maximum: 90,
+                titleFontColor: '#03254E',
+                titleFontSize: 14,
+                labelFontColor: '#03254E',
+            },
+
+            toolTip: {//툴팁을 껐을 경우 차트 선에 마우스를 올려도 상세정보가 보이지않는다.
+                shared: true,
+
+                // Custom toolTip 사용
+                contentFormatter: function(e) {
+                    var content = CanvasJS.formatDate(e.entries[0].dataPoint.x, "HH:mm:ss") + "<br>";
+                    content += "Humidity: " + e.entries[0].dataPoint.y + " &deg;C<br>";
+                    content += "Temperature: " + e.entries[1].dataPoint.y + " %";
+                    return content;
+                }
+            },
+            animationEnabled: true,
+            data: [{
+                type: "line", //change it to line, spline, area, column, pie,
+                name: "Humidity",
+                axisYType: "secondary",
+                showInLegend: true,
+                legendText: "Humidity",
+                markType: "circle",
+                markerSize: 1,
+                markerColor: "blue",
+                lineColor: "blue",
+                dataPoints: []   // Humidity 데이터 출력 값을 저장하는 배열
+            }, {
+              type: "line", //change it to line, spline, area, column, pie,
+              name: "Temperature",
+              showInLegend: true,
+              legendText: "Temperature",
+              markType: "circle",
+              markerSize: 1,
+              markerColor: "red",
+              lineColor: "red",
+                 dataPoints: []  // Temperature 데이터 출력 값을 저장하는 배열
+            }]
+        });
+        var timeStatus;
+        // logDHT의 값을들 가져와라
+        var dbRef = firebase.database().ref('logDHT/');
+        //파이어베이스에 연결되면 시간 값을 초기화시켜준다.
+        clearTimeout(timeStatus);
+
+        dbRef.on('child_added', function(snapshot) {
+        // child가 추가될 때 값을 계속 저장하면서 snapshot을 찍음
+          var humidity = snapshot.val().humidity;
+          var temperature = snapshot.val().temperature;
+          var time = snapshot.val().time;
+          var status = snapshot.val().status;
+          var index = snapshot.val().index;
+
+        //결과 값을 화면에 보여주기 위해 div값에 넣어줌
+          humi.innerText = "Humidity      :" + humidity + "%";
+          temp.innerText = "Temperature   :" + temperature + "°C";
+          t.innerText = "오늘은            :" + time + "입니다.";
+          st.innerText = "인터넷 연결 상태 :" + status;
+
+        //불쾌지수 계산
+          if(index >= 80){
+            f.innerText = "불쾌지수 : 매우높음" ;
+            console.log("불쾌지수 : 매우높음" +index);
+            //document.getElementById('face').src="sobad.png";
+          }else if(index < 80 && index >= 75){
+            f.innerText = "불쾌지수 : 높음";
+            console.log("불쾌지수 : 높음" +index);
+            //document.getElementById('face').src="bad.png";
+          }else if(index < 75 && index >= 68){
+            f.innerText = "불쾌지수 : 보통";
+            console.log("불쾌지수 : 보통" +index);
+            //document.getElementById('face').src="soso.png";
+          }else{
+            f.innerText = "불쾌지수 : 낮음";
+            console.log("불쾌지수 : 낮음" +index);
+            //document.getElementById('face').src="good.png";
+          }
+
+          //////jQuery 를 이용하여 게이지바 적용
+          jQuery(document).ready(function() {
+                var barProgress1 = jQuery(".progressbar1");
+                var barProgress2 = jQuery(".progressbar2");
+                // value 값의 숫자를 입력함으로서 내용을 채울 수 있다.
+
+                barProgress1.eq(0).progressbar({value: humidity});
+                barProgress1.eq(0).find(".ui-progressbar-value").css({"background":"blue"});
+
+                barProgress2.eq(0).progressbar({value: temperature});
+                barProgress2.eq(0).find(".ui-progressbar-value").css({"background":"red"});
+
+               });
+
+          timeStatus = setTimeout(function(){
+            //인터넷 연결상태를 2초마다 off상태로 바꿈 연결이 되어있다면
+            // 파이어베이스와 연결되면 값이 변함
+            st.innerText = "인터넷 연결 상태 : OFF";
+          },2000);
+
+        });
+
+        dbRef.on('child_added', function(snapshot) {
+          //그래프 시작점
+            var row = snapshot.val();
+            //clearTimeout(nowTime);
+            console.log(snapshot.val());
+            // firebase DB로 부터 받은 날짜 문자열은 CanvasJS에서 사용하려면 반드시 Date 객체형으로 변환해야 함
+            row.time = new Date(row.time);
+            chart.options.data[0].dataPoints.push({   // data[0]는 Huminity 속성 배열
+                x: row.time,
+                y: row.humidity
+            });
+              chart.options.data[1].dataPoints.push({   // data[1]는 Temperature 속성 배열
+                x: row.time,
+                y: row.temperature
+              });
+            chart.render();  // 데이터 포인터 값을 챠트에 넣은 후 차트 출력
+            //-- 그래프 끝나는 지점
+        });
+
+    </script>
+</body>
+</html>

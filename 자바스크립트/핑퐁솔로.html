@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="kr" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src ="http://code.jquery.com/jquery-latest.min.js" charset="utf-8"></script>
+    <style>
+    *{padding: 0; margin: 0;}
+      canvas{background: #eee; display: block; margin: 0 auto;}
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript">
+    $(document).ready(function() {
+        var canvas = $("#canvas")[0];
+        var ctx = canvas.getContext("2d");
+        var x = canvas.width/2;//캔퍼스 폭 중앙
+        var y = canvas.height -215;//캔퍼스 바닥에서 230떨어진 곳
+
+        //--------------------------------------------------------------------
+        var dx = 10;
+        var dy = (Math.random()-0.5)*10;
+        var barY1 = 3;
+        var barY2 = 3;
+        var ballRadius = 10;
+
+        var p1S = false;
+        var p2S = false;
+        var p1Score = 0;
+        var p2Score = 0;
+
+        var player1 = new drawPaddlePlayer1();
+        var player2 = new drawPaddlePlayer2();
+        var ball = new drawBall();
+        var paddleHeight = 75;
+        var paddleWidht = 10;
+        var player1paddleX = (canvas.width - paddleWidht*57);
+        var player1paddleY = ((canvas.height - paddleHeight)/2);
+        var player2paddleX = (canvas.width - paddleWidht*4);
+        var player2paddleY = ((canvas.height - paddleHeight)/2);
+//------------------------------------------------------------------------------------
+        this.keypress_table = {};
+        this.fireKeydown = function(event){
+          var _this = game;
+          _this.keypress_table[event.code.toString()] = true;
+        }
+
+        $(function(){
+          var keypress = {};
+          setInterval(function(){
+            // p1
+            if(keypress['81'] && player1paddleY > 0){
+              player1paddleY -= barY1;
+              console.log(player1paddleY);
+             }
+             else if(keypress ['81'] && player1paddleY < 0){
+               player1paddleY = 0;
+               console.log(player1paddleY);
+             }
+            if(keypress['65'] && player1paddleY < (canvas.height-75)){
+              player1paddleY += barY1;
+              console.log(player1paddleY);
+            } // down - s
+            else if(keypress['65'] && player1paddleY > (canvas.height-75)){
+              player1paddleY = canvas.height-75;
+              console.log(player1paddleY);
+            }
+
+          }, 7);
+
+          $(document).keydown(function(e){
+            keypress[e.which.toString()] = true;
+          });
+          $(document).keyup(function(e){
+            keypress[e.which.toString()] = false;
+          });
+        });
+
+        function drawPaddlePlayer1(){
+          ctx.beginPath();
+          ctx.rect(player1paddleX, player1paddleY, paddleWidht, paddleHeight);
+          ctx.fillStyle = "#00FFFF";
+          ctx.fill();
+          ctx.closePath();
+          this.crashWith = function(otherobj) {
+          var myleft = player2paddleX;
+          var myright = player2paddleX + paddleWidht;
+          var mytop = player2paddleY;
+          var mybottom = player2paddleY + paddleHeight;
+          var otherleft = x;
+          var otherright = x;
+          var othertop = y;
+          var otherbottom = y;
+          var crash = true;
+          if ((mybottom < othertop)||(mytop > otherbottom)||(myright < otherleft)||(myleft > otherright)) {
+            crash = false;
+            }
+          return crash;
+          }
+        }
+        function drawPaddlePlayer2(){
+          ctx.beginPath();
+          ctx.rect(player2paddleX, player2paddleY, paddleWidht, paddleHeight);
+          ctx.fillStyle = "#FFFF00";
+          ctx.fill();
+          ctx.closePath();
+          this.crashWith = function(otherobj) {
+          var myleft = player1paddleX;
+          var myright = player1paddleX + paddleWidht;
+          var mytop = player1paddleY;
+          var mybottom = player1paddleY + paddleHeight;
+          var otherleft = x;
+          var otherright = x;
+          var othertop = y;
+          var otherbottom = y;
+          var crash = true;
+          if ((mybottom < othertop)||(mytop > otherbottom)||(myright < otherleft)||(myleft > otherright)) {
+            crash = false;
+            }
+          return crash;
+          }
+        }
+        function drawBall(){
+          ctx.beginPath();
+          ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+          ctx.fillStyle = "#0095DD";
+          ctx.fill();
+          ctx.closePath();
+        }
+        function drawBallAct(){
+          ctx.beginPath();
+          ctx.arc(x, y, ballRadius+1, 0, Math.PI*2);
+          ctx.fillStyle = "#000000";
+          ctx.fill();
+          ctx.closePath();
+        }
+
+        function moveAll(){
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+            ctx.font = "200px Georgia";
+            ctx.fillStyle = "#ffaacc"
+            ctx.fillText(p1Score, canvas.width/6, canvas.height/2+40);
+
+            ctx.font = "200px Georgia";
+            ctx.fillStyle = "#5f5f5f"
+            ctx.fillText(":", canvas.width/2-20, canvas.height/2+40);
+
+            ctx.font = "200px Georgia";
+            ctx.fillStyle = "#ffccaa"
+            ctx.fillText(p2Score, canvas.width-215, canvas.height/2+40);
+
+          drawBall();
+          drawPaddlePlayer1();
+          drawPaddlePlayer2();
+
+ // 위 아래벽 튕겨내기
+          if(y + dy > canvas.height-ballRadius || y + dy < ballRadius ){
+            dy = -dy;
+            drawBallAct();
+          }
+          if(x + dx > canvas.width-ballRadius){
+            p1S = true
+            if(p1S == true){
+              p1Score = p1Score + 1;
+              if(p1Score == 14){
+                alert("1player win!")
+                p1Score = 0;
+                p2Score = 0;
+              }
+            }
+            x = canvas.width/2;
+            y = canvas.height -130;
+            dx = -10;
+            dy = (Math.random()-0.5)*10;
+            paddleHeight = 75;
+            paddleWidht = 10;
+            p1S = false;
+          }
+          if( x + dx < ballRadius){
+            p2S = true
+            if(p2S == true){
+              p2Score = p2Score + 1;
+              if(p2Score == 14){
+                alert("2player win!")
+                p1Score = 0;
+                p2Score = 0;
+              }
+            }
+            x = canvas.width/2;
+            y = canvas.height -130;
+            dx = 10;
+            dy = (Math.random()-0.5)*10;
+            paddleHeight = 75;
+            paddleWidht = 10;
+            p2S = false;
+          }
+//------------------------------------------------------------------------------------------------
+          x += dx;
+          y += dy;
+          player2paddleY = y-(Math.random()-0.5)*30;
+          if(player1.crashWith(ball)){
+            dx = -dx;
+            dy = (Math.random()-0.5)*10;
+          }
+          if(player2.crashWith(ball)){
+            dx = -dx;
+            dy = (Math.random()-0.5)*10;
+          }
+        }
+        setInterval(moveAll, 20);
+      });
+    </script>
+    <h1>핑퐁(탁구게임)</h1>
+    <hr>
+    <canvas id="canvas" width="600" height="420">
+    </canvas>
+  </body>
+</html>

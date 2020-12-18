@@ -1,0 +1,197 @@
+<html>
+<script src="https://www.gstatic.com/firebasejs/7.15.4/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.15.4/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.15.4/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.15.4/firebase-analytics.js"></script>
+<script src="//code.jquery.com/jquery-3.3.1.min.js"></script>
+<link rel="stylesheet" href="/an-skill-bar.css">
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ"crossorigin="anonymous"></script>
+<script src="/an-skill-bar.js"></script>
+<script>
+  var firebaseConfig = {
+    apiKey: "AIzaSyDUVrnEnz0Nd8imNV9U-BiHVrO3dwSkw6c",
+    authDomain: "ydgdit04-test.firebaseapp.com",
+    databaseURL: "https://ydgdit04-test.firebaseio.com",
+    projectId: "ydgdit04-test",
+    storageBucket: "ydgdit04-test.appspot.com",
+    messagingSenderId: "543055218936",
+    appId: "1:543055218936:web:77fab187377a5a8bad130d",
+    measurementId: "G-R7E5XHTVWK"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+ </script>
+
+ <style type="text/css">
+ div#window {
+  width: 100%;
+  height: 100%;
+  background-image:url("win.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0.5;
+}
+   div#headH1{
+     width: 60%;
+     height: 10vh;
+     display: -webkit-box;
+     display: -ms-flexbox;
+     display: flex;
+     -webkit-box-align: center;
+     -ms-flex-align: center;
+     align-items: center;
+     -webkit-box-pack: center;
+     -ms-flex-pack: center;
+     justify-content: center;
+     border: 1px solid black;
+     border-top-left-radius: 5px;
+     border-top-right-radius: 5px;
+     border-bottom-left-radius: 5px;
+     border-bottom-right-radius: 5px;
+   }
+
+   div#head{
+       width: 100%;
+       height: 15vh;
+       display: -webkit-box;
+       display: -ms-flexbox;
+       display: flex;
+       -webkit-box-align: center;
+       -ms-flex-align: center;
+       align-items: center;
+       -webkit-box-pack: center;
+       -ms-flex-pack: center;
+       justify-content: center;
+   }
+
+   div#head2{
+       width: 100%;
+       height: 15vh;
+       display: -webkit-box;
+       display: -ms-flexbox;
+       display: flex;
+       -webkit-box-align: center;
+       -ms-flex-align: center;
+       align-items: center;
+       -webkit-box-pack: center;
+       -ms-flex-pack: center;
+       justify-content: center;
+   }
+
+   div#temBox{
+     width: 30%;
+     height: 20vh;
+     display: -webkit-box;
+     display: -ms-flexbox;
+     display: flex;
+     -webkit-box-align: center;
+     -ms-flex-align: center;
+     align-items: center;
+     -webkit-box-pack: center;
+     -ms-flex-pack: center;
+     justify-content: center;
+     border: 1px solid black;
+     border-top-left-radius: 5px;
+     border-top-right-radius: 5px;
+     border-bottom-left-radius: 5px;
+     border-bottom-right-radius: 5px;
+     margin: 2%;
+     box-shadow: 5px 5px 5px;
+   }
+
+   div#humBox{
+     width: 30%;
+     height: 20vh;
+     display: -webkit-box;
+     display: -ms-flexbox;
+     display: flex;
+     -webkit-box-align: center;
+     -ms-flex-align: center;
+     align-items: center;
+     -webkit-box-pack: center;
+     -ms-flex-pack: center;
+     justify-content: center;
+     border: 1px solid black;
+     border-top-left-radius: 5px;
+     border-top-right-radius: 5px;
+     border-bottom-left-radius: 5px;
+     border-bottom-right-radius: 5px;
+     margin: 2%;
+     box-shadow: 5px 5px 5px;
+   }
+
+   div#dht{
+     width: 100%;
+     height: 60vh;
+     display: -webkit-box;
+     display: -ms-flexbox;
+     display: flex;
+     -webkit-box-align: center;
+     -ms-flex-align: center;
+     align-items: center;
+     -webkit-box-pack: center;
+     -ms-flex-pack: center;
+     justify-content: center;
+   }
+ </style>
+
+
+
+<body>
+  <div id="window">
+    <div id="head">
+      <div id="headH1">
+        <p>Getting started with Firebase</p>
+      </div>
+    </div>
+  <!--   구분선    -->
+  <div id="head2">
+    <h1 id="bigOne"></h1>
+  </div>
+  <!--   구분선    -->
+  <div id="dht">
+    <div id="humBox" class="bar">
+      <h1 id="hum"></h1>
+      <div id="bar1">
+      </div>
+    </div>
+    <!--   구분선    -->
+    <div id="temBox" class="bar">
+      <h1 id="tem"></h1>
+      <div id="bar2">
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+
+   var dbRef = firebase.database().ref().child('LED_STATUS');
+
+   // ON 버턴 클릭하여 DB 값 true 설정
+   function onFunction() {
+   dbRef.set('ON')
+   }
+   // OFF 버튼 클릭하여 DB 값 false 설정
+   function offFunction() {
+   dbRef.set('OFF')
+   }
+   // 현재 상태의 database 값 읽어오기
+   dbRef.on("value", function(snapshot) {
+   if (snapshot.val() == 'ON') {
+   OUT_TEXT.innerText = 'LED is ON';
+ } else if (snapshot.val() == 'OFF') {
+   OUT_TEXT.innerText = 'LED is OFF';
+   }
+   }, function (error) {
+   console.log("Error: " + error.code);
+   });
+   }
+
+</script>
+</body>
+
+
+
+
+</html>
